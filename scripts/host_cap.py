@@ -220,37 +220,6 @@ def constituent_model_const_index(host_model):
     return unique_local_name(hstr, host_model)
 
 ###############################################################################
-def constituent_model_consts(host_model):
-###############################################################################
-    """Return the name of the function that will return a pointer to the
-       array of all constituents"""
-    hstr = f"{host_model.name}_constituents_array"
-    return unique_local_name(hstr, host_model)
-
-###############################################################################
-def constituent_model_advected_consts(host_model):
-###############################################################################
-    """Return the name of the function that will return a pointer to the
-       array of advected constituents"""
-    hstr = f"{host_model.name}_advected_constituents_array"
-    return unique_local_name(hstr, host_model)
-
-###############################################################################
-def constituent_model_const_props(host_model):
-###############################################################################
-    """Return the name of the array of constituent property object pointers"""
-    hstr = f"{host_model.name}_model_const_properties"
-    return unique_local_name(hstr, host_model)
-
-###############################################################################
-def constituent_model_const_index(host_model):
-###############################################################################
-    """Return the name of the interface that returns the array index of
-       a constituent array given its standard name"""
-    hstr = f"{host_model.name}_const_get_index"
-    return unique_local_name(hstr, host_model)
-
-###############################################################################
 def add_constituent_vars(cap, host_model, suite_list, run_env):
 ###############################################################################
     """Create a DDT library containing array reference variables
