@@ -4,7 +4,6 @@
 Classes and supporting code to hold all information on CCPP metadata variables
 Var: Class which holds all information on a single CCPP metadata variable
 VarSpec: Class to hold a standard_name description which can include dimensions
-VarAction: Base class for describing actions on variables
 VarLoopSubst: Class for describing a loop substitution
 VarDictionary: Class to hold all CCPP variables of a CCPP unit (e.g., suite,
                scheme, host)
@@ -1279,52 +1278,7 @@ def ccpp_standard_var(std_name, source_type, run_env,
 
 ###############################################################################
 
-class VarAction:
-    """A base class for variable actions such as loop substitutions or
-    temporary variable handling."""
-
-    def __init__(self):
-        """Initialize this action (nothing to do)"""
-        # pass # Nothing general here yet
-
-    def add_local(self, vadict, source):
-        """Add any variables needed by this action to <dict>.
-        Variable(s) will appear to originate from <source>."""
-        raise ParseInternalError('VarAction add_local method must be overriden')
-
-    def write_action(self, vadict, dict2=None, any_scope=False):
-        """Return a string setting implementing the action of <self>.
-        Variables must be in <dict> or <dict2>"""
-        errmsg = 'VarAction write_action method must be overriden'
-        raise ParseInternalError(errmsg)
-
-    def equiv(self, vmatch):
-        """Return True iff <vmatch> is equivalent to <self>.
-        Equivalence at this level is tested by comparing the type
-        of the objects.
-        equiv should be overridden with a method that first calls this
-        method and then tests class-specific object data."""
-        return vmatch.__class__ == self.__class__
-
-    def add_to_list(self, vlist):
-        """Add <self> to <vlist> unless <self> or its equivalent is
-        already in <vlist>. This method should not need to be overriden.
-        Return the (possibly modified) list"""
-        ok_to_add = True
-        for vlist_action in vlist:
-            if vlist_action.equiv(self):
-                ok_to_add = False
-                break
-            # end if
-        # end for
-        if ok_to_add:
-            vlist.append(self)
-        # end if
-        return vlist
-
-###############################################################################
-
-class VarLoopSubst(VarAction):
+class VarLoopSubst:
     """A class to handle required loop substitutions where the host model
     (or a suite part) does not provide a loop-like variable used by a
     suite part or scheme or where a host model passes a subset of a
@@ -1384,7 +1338,7 @@ class VarLoopSubst(VarAction):
         """Return True iff <vmatch> is equivalent to <self>.
         Equivalence is determined by matching the missing standard name
         and the required standard names"""
-        is_equiv = super().equiv(vmatch)
+        is_equiv = ( vmatch.__class__ == self.__class__ )
         if is_equiv:
             is_equiv = vmatch.missing_stdname == self.missing_stdname
         # end if
@@ -1398,6 +1352,21 @@ class VarLoopSubst(VarAction):
             # end for
         # end if
         return is_equiv
+
+    def add_to_list(self, vlist):
+        """Add <self> to <vlist> unless <self> or its equivalent is
+        already in <vlist>. Return the (possibly modified) list"""
+        ok_to_add = True
+        for vlist_action in vlist:
+            if vlist_action.equiv(self):
+                ok_to_add = False
+                break
+            # end if
+        # end for
+        if ok_to_add:
+            vlist.append(self)
+        # end if
+        return vlist
 
     def write_action(self, vadict, dict2=None, any_scope=False):
         """Return a string setting the correct values for our
